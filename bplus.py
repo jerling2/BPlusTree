@@ -15,56 +15,57 @@ class BPlusNode():
         self.prev = None
 
     def nodeify(self, value, ptr):
+        """ This Defines the Schema of a BPlusNode. """
         return [value, ptr]
 
     def add(self, value, ptr=None):
         self.children.append(self.nodeify(value, ptr))
-        self.children.sort(key=lambda x: x[0])
-        self.size += 1
-        return None
+        self.children.sort(key=lambda x: x[0])                   # Sort by rid.
+        self.size += 1                                        # The node grows!
+        return None 
 
     def pop(self, index=0):
         self.children.pop(index)
-        self.size -= 1
+        self.size -= 1                                      # The node shrinks!
         return None 
 
     def get_index_of(self, search_key):
         if isinstance(search_key, BPlusNode):
-            search_index = PTR_INDEX
+            search_index = PTR_INDEX     # We are searching by using BPlusNode.
         else:
-            search_index = RID_INDEX
+            search_index = RID_INDEX     # We are searching by using rid <int>.
         for i, child in enumerate(self.children):
             if search_key == child[search_index]:
-                return i
-        return -1
+                return i               # Return index where we found the match.
+        return NOT_FOUND
     
     def get_siblings(self):
         result = [None, None]
-        if not self.parent:
+        if not self.parent:                           # No parent, no siblings.
             return result
         ptr = self.parent.get_index_of(self)
-        if ptr - 1 >= 0:
+        if ptr - 1 >= 0:                 # Ptr arithmetic to find the lsibling.
             result[0] = self.parent.children[ptr - 1][PTR_INDEX]
-        if ptr + 1 <= self.parent.size:
+        if ptr + 1 <= self.parent.size:  # Ptr arithmetic to find the rsibling.
             result[1] = self.parent.children[ptr + 1][PTR_INDEX]
         return result
 
     def get_max(self, mode: str):
-        if mode == "r":
-            return self.children[-2][RID_INDEX]
-        if mode == "p":
+        if mode == "r": # Return the max rid which is the second to last child.
+            return self.children[-2][RID_INDEX] 
+        if mode == "p":     # Return the max BPlusNode which is the last child.
             return self.children[-1][PTR_INDEX]
         raise Exception("Invalid mode")
     
     def get_min(self, mode: str):
-        if mode == "r":
+        if mode == "r":          # Return the min rid which is the first child.
             return self.children[0][RID_INDEX]
-        if mode == "p":
+        if mode == "p":    # Return the min BPlusNode which is the first child.
             return self.children[0][PTR_INDEX]
         raise Exception("Invalid mode")
 
-
     def __repr__(self) -> str:
+        """ [DEV tool] usuage: print(BPlusNode) or repr(BPlusNode) """
         string = f"BPlusNode("
         string += str(self.children[0][RID_INDEX])
         for child in self.children[1:]:
@@ -255,7 +256,7 @@ class BPlusTree():
                     inode = node  # Inode has the target rid, but isn't a leaf.
         return (node, inode)
 
-    def inorder_quick(self):
+    def inorder(self):
         if not self.root:                             # Check if tree is empty.
             return []
         result = []
@@ -272,7 +273,7 @@ class BPlusTree():
     #                             TREE DEV TOOLS                              #
     # ----------------------------------------------------------------------- #
 
-    def inorder(self):
+    def inorder_slow(self):
         if not self.root:
             return []
         queue = [self.root]

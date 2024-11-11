@@ -2,10 +2,6 @@ import random
 from bplus import *
 
 def main():
-    # tree = BPlusTree(3)
-    # tree.insert(1)
-    # tree.delete(1)
-
     SIZE = 2**15
     tree = BPlusTree(3)
 
@@ -17,27 +13,27 @@ def main():
                 print("Duplicate key!")
     print("Pass insertion")
     
-    def test_inorder_quick(tree, size):
-        inorder_quick_array = tree.inorder_quick()
+    def test_inorder(tree, size):
+        inorder_quick_array = tree.inorder()
         if len(inorder_quick_array) != size:
-            raise Exception(f"Quick Inorder({len(inorder_quick_array)}) != {size}")
+            raise Exception(f"Inorder({len(inorder_quick_array)}) != {size}")
         for i in range(1, len(inorder_quick_array)):
             if inorder_quick_array[i] < inorder_quick_array[i - 1]:
                 raise Exception(f"{inorder_quick_array[i]} is lesser than {inorder_quick_array[i - 1]}")
-    test_inorder_quick(tree, SIZE)
+    test_inorder(tree, SIZE)
     print("Pass quick inorder traversal")
 
-    inorder_array = tree.inorder()
+    inorder_array = tree.inorder_slow()
     if len(inorder_array) != SIZE:
-        raise Exception(f"Inorder list is not the correct size")
+        raise Exception(f"Slow inorder list is not the correct size")
     for i in range(1, len(inorder_array)):
         if inorder_array[i] < inorder_array[i - 1]:
             raise Exception(f"{inorder_array[i]} is lesser than {inorder_array[i - 1]}")
-    print("Pass inorder traversal")
+    print("Pass inorder_slow traversal")
 
     old_size = len(tree.rid_set)
     for i in range(SIZE):
-        test_inorder_quick(tree, SIZE - i)
+        test_inorder(tree, SIZE - i)
         print(f"Passed inorder traversal: {len(tree.rid_set)}")
         population = sorted(tree.rid_set)
         random_rid = random.sample(population, 1)[0]
