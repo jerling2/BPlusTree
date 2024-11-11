@@ -4,7 +4,6 @@ NOT_FOUND = -1
 RID_INDEX = 0
 PTR_INDEX = 1
 
-
 class BPlusNode():
     def __init__(self, is_leaf=True) -> None:
         self.parent = None
@@ -66,10 +65,22 @@ class BPlusNode():
 
     def __repr__(self) -> str:
         """ [DEV tool] usuage: print(BPlusNode) or repr(BPlusNode) """
+        if self.is_leaf:
+            return self.__leaf_repr__()
         string = f"BPlusNode("
         string += str(self.children[0][RID_INDEX])
         for child in self.children[1:]:
             string += f", {child[RID_INDEX]}"
+        string += ")"
+        return string
+    
+    def __leaf_repr__(self) -> str:
+        string = "BPlusNode(["
+        string += str(self.children[0][RID_INDEX]) + ", "
+        string += str(self.children[0][PTR_INDEX]) + "]"
+        for child in self.children[1:self.size]:
+            string += f", [{child[RID_INDEX]}, "
+            string += f"{child[PTR_INDEX]}]"
         string += ")"
         return string
 
@@ -81,13 +92,13 @@ class BPlusTree():
         self.min_node_size = math.ceil(deg / 2) - 1
         self.root = None
 
-    def insert(self, rid):
+    def insert(self, rid, data=True):
         if rid in self.rid_set:           # Check if rid already exist in tree.
             return False
         self.rid_set.add(rid)
         self.root = self.root or BPlusNode()
         leaf, _ = self.find_nodes(rid)   # Find a leaf that to contain the rid.
-        leaf.add(rid)                                    # Add rid to the leaf.
+        leaf.add(rid, data)                     # Add rid and data to the leaf.
         if leaf.size == self.deg:            # Check if leaf has too many keys.
             self.split(leaf)           # Split leaf (propogates split upwards).
         return True
@@ -157,17 +168,19 @@ class BPlusTree():
         ls, rs = node.get_siblings() 
         if ls and ls.size > self.min_node_size:        # Case I: steal from ls.
             srid = ls.get_max("r")                   # "Stolen" ls' node's rid.
+            sdat = ls.get_max("p")                  # "Stolen" ls' node's data.
             ls.pop(-2)                          # Pop(-2) to pop maximum child.
-            node.add(srid)
+            node.add(srid, sdat)
         elif rs and rs.size > self.min_node_size:     # Case II: steal from rs.
             srid = rs.get_min("r")                   # "Stolen" rs' node's rid.
+            sdat = rs.get_min("p")
             rs.pop()                              # Pop() to pop minimum child.
-            node.add(srid)
+            node.add(srid, sdat)
             k = p.get_index_of(node)
             p.children[k][RID_INDEX] = rs.get_min("r")  # Update key in parent.
         elif ls:                                     # Case III: merge with ls.
             for i in range(ls.size):             # cp children from ls to node.
-                node.add(ls.children[i][RID_INDEX])
+                node.add(ls.children[i][RID_INDEX], ls.children[i][PTR_INDEX])
             node.prev = ls.prev                  # Detach ls from other leaves.
             if node.prev:                         
                 node.prev.next = node            # Detach ls from other leaves.
@@ -175,7 +188,7 @@ class BPlusTree():
             p.pop(k)                                   # Detach ls from parent.
         elif rs:                                      # Case IV: merge with rs.
             for i in range(rs.size):             # cp children from rs to node.
-                node.add(rs.children[i][RID_INDEX])
+                node.add(rs.children[i][RID_INDEX], rs.children[i][PTR_INDEX])
             node.next = rs.next                  # Detach rs from other leaves.
             if node.next:
                 node.next.prev = node            # Detach rs from other leaves.
@@ -242,6 +255,11 @@ class BPlusTree():
                     rs.children[i][PTR_INDEX].parent = node # Update child's p.
         return self.merge_internal(p)
     
+    def search(self, rid):
+        node, _ = self.find_nodes(rid)
+        k = node.get_index_of(rid)
+        return node.children[k][PTR_INDEX] # TODO: This should be a DATA_INDEX.
+
     def find_nodes(self, rid):
         if not self.root:                             # Check if tree is empty.
             return (None, None)
@@ -281,7 +299,7 @@ class BPlusTree():
         while queue:
             node = queue.pop(0)
             for child in node.children:
-                if child[PTR_INDEX]:
+                if isinstance(child[PTR_INDEX], BPlusNode):
                     queue.append(child[PTR_INDEX])
                 elif child[RID_INDEX] != float('inf'):
                     result.append(child[RID_INDEX])
@@ -297,7 +315,7 @@ class BPlusTree():
         queue = [(c[PTR_INDEX], level + 1) for c in self.root.children]
         while queue:
             node, l = queue.pop(0)
-            if node == None:
+            if not isinstance(node, BPlusNode):
                 continue
             for c in node.children:
                 queue.append((c[PTR_INDEX], l + 1))
