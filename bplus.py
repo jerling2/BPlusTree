@@ -63,8 +63,11 @@ class BPlusNode():
             return self.children[0][PTR_INDEX]
         raise Exception("Invalid mode")
 
+    # ----------------------------------------------------------------------- #
+    #                             NODE DEV TOOLS                              #
+    # ----------------------------------------------------------------------- #
+
     def __repr__(self) -> str:
-        """ [DEV tool] usuage: print(BPlusNode) or repr(BPlusNode) """
         if self.is_leaf:
             return self.__leaf_repr__()
         string = f"BPlusNode("
