@@ -38,7 +38,8 @@ def main():
     fp = open(out, "w")
     sys.stdout = fp
 
-    ELEMENTS = [2**i for i in range(1, 16)]
+    # ELEMENTS = [2**i for i in range(1, 16)]
+    ELEMENTS = [10*i for i in range(1, 500)]
 
     print(f"DEG={DEG}\tSample={ITERATIONS}")
 
