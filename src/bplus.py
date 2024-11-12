@@ -281,6 +281,26 @@ class BPlusTree():
                     inode = node  # Inode has the target rid, but isn't a leaf.
         return (node, inode)
 
+    def range(self, rid_1, rid_2):
+        if not self.root:                             # Check if tree is empty.
+            return []
+        result = []
+        node = self.root                                       # Start at root.
+        while not node.is_leaf:          # Traverse to the very left leaf node.
+            node = node.children[0][PTR_INDEX]
+        while node and node.get_max('d') < rid_1: 
+            node = node.next                 # Quickly skip nodes out of range.
+        while node is not None:
+            for i in range(node.size):
+                rid = node.children[i][RID_INDEX]
+                if rid < rid_1: 
+                    continue                # skip if rid is less than minimum.
+                if rid > rid_2:
+                    return result      # return if rid is greater than maximum.
+                result.append(rid)
+            node = node.next
+        return result
+
     def inorder(self):
         if not self.root:                             # Check if tree is empty.
             return []

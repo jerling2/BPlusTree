@@ -1,3 +1,4 @@
-Test BTree inserting & searching 32768 elements...PASS
+Test BTree inserting & searching 1024 elements...PASS
 Test BTree inorder list...PASS
-Test BTree deleting & searching 32768 elements...PASS
+Test BTree range...11 rids where found...PASS
+Test BTree deleting & searching 1024 elements...PASS
