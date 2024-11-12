@@ -8,7 +8,8 @@ def main():
     for _ in range(SIZE):
         status = False
         while not status:
-            status = tree.insert(random.randint(0, 2**40))
+            r = random.randint(0, 2**40)
+            status = tree.insert(r, r)
             if status == False:
                 print("Duplicate key!")
     print("Pass insertion")
@@ -31,12 +32,14 @@ def main():
             raise Exception(f"{inorder_array[i]} is lesser than {inorder_array[i - 1]}")
     print("Pass inorder_slow traversal")
 
+    
     old_size = len(tree.rid_set)
     for i in range(SIZE):
         test_inorder(tree, SIZE - i)
-        print(f"Passed inorder traversal: {len(tree.rid_set)}")
         population = sorted(tree.rid_set)
         random_rid = random.sample(population, 1)[0]
+        if tree.search(r) != r:
+            raise Exception("Search failed!")
         if tree.delete(random_rid) == False:
             raise Exception("Couldn't find key")
         new_size = len(tree.rid_set)
@@ -44,8 +47,7 @@ def main():
             raise Exception("Deletion error")
         old_size = new_size
 
-
-    print("pass deletion")
+    print("pass deletion and search")
     print(tree.rid_set)
 
 if __name__ == "__main__":

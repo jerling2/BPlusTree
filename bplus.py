@@ -261,7 +261,7 @@ class BPlusTree():
     def search(self, rid):
         node, _ = self.find_nodes(rid)
         k = node.get_index_of(rid)
-        return node.children[k][PTR_INDEX] # TODO: This should be a DATA_INDEX.
+        return node.children[k][PTR_INDEX]
 
     def find_nodes(self, rid):
         if not self.root:                             # Check if tree is empty.
