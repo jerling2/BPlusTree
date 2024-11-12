@@ -54,12 +54,16 @@ class BPlusNode():
             return self.children[-2][RID_INDEX] 
         if mode == "p":     # Return the max BPlusNode which is the last child.
             return self.children[-1][PTR_INDEX]
+        if mode == "d":                  # [For leaf nodes] get the max "data".
+            return self.children[-2][PTR_INDEX]
         raise Exception("Invalid mode")
     
     def get_min(self, mode: str):
         if mode == "r":          # Return the min rid which is the first child.
             return self.children[0][RID_INDEX]
         if mode == "p":    # Return the min BPlusNode which is the first child.
+            return self.children[0][PTR_INDEX]
+        if mode == "d":                  # [For leaf nodes] get the min "data".
             return self.children[0][PTR_INDEX]
         raise Exception("Invalid mode")
 
@@ -171,12 +175,12 @@ class BPlusTree():
         ls, rs = node.get_siblings() 
         if ls and ls.size > self.min_node_size:        # Case I: steal from ls.
             srid = ls.get_max("r")                   # "Stolen" ls' node's rid.
-            sdat = ls.get_max("p")                  # "Stolen" ls' node's data.
+            sdat = ls.get_max("d")                  # "Stolen" ls' node's data.
             ls.pop(-2)                          # Pop(-2) to pop maximum child.
             node.add(srid, sdat)
         elif rs and rs.size > self.min_node_size:     # Case II: steal from rs.
             srid = rs.get_min("r")                   # "Stolen" rs' node's rid.
-            sdat = rs.get_min("p")
+            sdat = rs.get_min("d")
             rs.pop()                              # Pop() to pop minimum child.
             node.add(srid, sdat)
             k = p.get_index_of(node)
